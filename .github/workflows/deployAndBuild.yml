@@ -1,0 +1,76 @@
+name: "Build And Deploy API"
+
+on:
+  push:
+    branches:
+      - main
+
+
+env:
+  AZURE_WEBAPP: feedback-webapp
+  AZURE_WEBAPP_PATH: './Published'
+  Configuration: Release
+  SOLUTION: 'FdbSolution.sln'
+  NETCORE_VERSION: '6.0'
+
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+     - uses: actions/checkout@v2
+
+     - name: Setup .NET Core SDK ${{ env.NETCORE_VERSION }}
+       uses: actions/setup-dotnet@v1
+       with:
+         dotnet-version: ${{ env.NETCORE_VERSION }}
+
+     - name: Setup Nuget
+       uses: nuget/setup-nuget@v1
+
+
+     - name: Build
+       run: dotnet build ${{env.SOLUTION}} -c ${{ env.Configuration }} 
+
+
+     - name: Publish
+       run: dotnet publish ${{env.SOLUTION}} -c ${{ env.Configuration }}  -o ${{env.AZURE_WEBAPP_PATH}}
+
+
+  
+
+     - name: Upload artifact
+       uses: actions/upload-artifact@v2
+       with:
+         name: .net-api
+         path: ${{env.AZURE_WEBAPP_PATH}}
+
+
+  deploy:
+
+    name: deploy
+    runs-on: ubuntu-latest
+    needs: build
+
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact builds
+        uses: actions/download-artifact@v2
+        with:
+          name: .net-api
+
+
+      - name: Deploy to Web App
+        id: deploy
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{env.AZURE_WEBAPP}}
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_API }}
+          package: .
