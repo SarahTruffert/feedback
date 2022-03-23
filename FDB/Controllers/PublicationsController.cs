@@ -12,7 +12,7 @@ using FDB.Mod;
 namespace FDB.Controllers
 {
     [Route("api/[controller]")]
-    [RestrictDomain("https://feedback-webapp.azurewebsites.net")]
+    [RestrictDomain("localhost")]
     [ApiController]
     public class PublicationsController : ControllerBase
     {
