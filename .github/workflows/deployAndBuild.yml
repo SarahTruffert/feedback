@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  AZURE_WEBAPP: feedback-webapp
+  AZURE_WEBAPP: feedback-simplon
   AZURE_WEBAPP_PATH: './Published'
   Configuration: Release
   SOLUTION: 'FdbSolution.sln'
